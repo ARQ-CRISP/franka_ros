@@ -193,7 +193,7 @@ bool FrankaCombinableHW::initRobot(ros::NodeHandle& robot_hw_nh) {
     return false;
   }
 
-  robot_ = std::make_unique<franka::Robot>(robot_ip_);
+  robot_ = std::make_unique<franka::Robot>(robot_ip_, franka::RealtimeConfig::kIgnore);
 
   // Set default collision behaviour
   robot_->setCollisionBehavior(
