@@ -151,6 +151,20 @@ class FrankaCombinableHW : public hardware_interface::RobotHW {
   std::array<double, 7> getJointEffortCommand() const noexcept;
 
   /**
+   * Gets the current joint position command.
+   *
+   * @return Current joint position command.
+   */
+  std::array<double, 7> getJointPositionCommand() const noexcept;
+
+  /**
+   * Gets the current joint velocity command.
+   *
+   * @return Current joint velocity command.
+   */
+  std::array<double, 7> getJointVelocityCommand() const noexcept;
+
+  /**
    * Enforces limits on torque level.
    *
    * @param[in] period Duration of the current cycle.
@@ -192,6 +206,24 @@ class FrankaCombinableHW : public hardware_interface::RobotHW {
    * @return true if the command contains NaN, false otherwise.
    */
   static bool commandHasNaN(const franka::Torques& command);
+
+  /**
+   * Returns whether the position command contains NaN values.
+   *
+   * @param[in] command The position commmand to check.
+   *
+   * @return true if the command contains NaN, false otherwise.
+   */
+  static bool commandHasNaN(const franka::JointPositions& command);
+
+  /**
+   * Returns whether the velocity command contains NaN values.
+   *
+   * @param[in] command The velocity commmand to check.
+   *
+   * @return true if the command contains NaN, false otherwise.
+   */
+  static bool commandHasNaN(const franka::JointVelocities& command);
 
   /**
    * Returns whether the Cartesian pose command contains NaN values.
@@ -261,11 +293,15 @@ class FrankaCombinableHW : public hardware_interface::RobotHW {
   hardware_interface::JointStateInterface joint_state_interface_{};
   franka_hw::FrankaStateInterface franka_state_interface_{};
   hardware_interface::EffortJointInterface effort_joint_interface_{};
+  hardware_interface::PositionJointInterface position_joint_interface_{};
+  hardware_interface::VelocityJointInterface velocity_joint_interface_{};
   franka_hw::FrankaPoseCartesianInterface franka_pose_cartesian_interface_{};
   franka_hw::FrankaVelocityCartesianInterface franka_velocity_cartesian_interface_{};
   franka_hw::FrankaModelInterface franka_model_interface_{};
 
   joint_limits_interface::EffortJointSoftLimitsInterface effort_joint_limit_interface_{};
+  joint_limits_interface::VelocityJointSoftLimitsInterface velocity_joint_limit_interface_{};
+  joint_limits_interface::PositionJointSoftLimitsInterface position_joint_limit_interface_{};
 
   urdf::Model urdf_model_;
 
@@ -287,6 +323,8 @@ class FrankaCombinableHW : public hardware_interface::RobotHW {
 
   // command data of frankahw ros
   std::mutex ros_cmd_mutex_;
+  franka::JointPositions position_joint_command_ros_;
+  franka::JointVelocities velocity_joint_command_ros_;
   franka::Torques effort_joint_command_ros_;
   franka::CartesianPose pose_cartesian_command_ros_;
   franka::CartesianVelocities velocity_cartesian_command_ros_;

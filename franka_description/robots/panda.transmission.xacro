@@ -8,17 +8,18 @@
             <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
                 <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
                 <legacyModeNS>true</legacyModeNS>
-                <!-- <robotNamespace>/${robot_name}</robotNamespace> -->
             </plugin>
         </gazebo>
 
         <transmission name="${robot_name}_tran_1">
             <type>transmission_interface/SimpleTransmission</type>
             <joint name="${robot_name}_joint1">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
             </joint>
             <actuator name="${robot_name}_motor_1">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>
@@ -26,10 +27,12 @@
         <transmission name="${robot_name}_tran_2">
             <type>transmission_interface/SimpleTransmission</type>
             <joint name="${robot_name}_joint2">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
             </joint>
             <actuator name="${robot_name}_motor_2">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>
@@ -37,10 +40,12 @@
         <transmission name="${robot_name}_tran_3">
             <type>transmission_interface/SimpleTransmission</type>
             <joint name="${robot_name}_joint3">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
             </joint>
             <actuator name="${robot_name}_motor_3">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>
@@ -48,10 +53,12 @@
         <transmission name="${robot_name}_tran_4">
             <type>transmission_interface/SimpleTransmission</type>
             <joint name="${robot_name}_joint4">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
             </joint>
             <actuator name="${robot_name}_motor_4">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>
@@ -59,10 +66,12 @@
         <transmission name="${robot_name}_tran_5">
             <type>transmission_interface/SimpleTransmission</type>
             <joint name="${robot_name}_joint5">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
             </joint>
             <actuator name="${robot_name}_motor_5">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>
@@ -70,10 +79,12 @@
         <transmission name="${robot_name}_tran_6">
             <type>transmission_interface/SimpleTransmission</type>
             <joint name="${robot_name}_joint6">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
             </joint>
             <actuator name="${robot_name}_motor_6">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>
@@ -81,10 +92,12 @@
         <transmission name="${robot_name}_tran_7">
             <type>transmission_interface/SimpleTransmission</type>
             <joint name="${robot_name}_joint7">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
             </joint>
             <actuator name="${robot_name}_motor_7">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <!-- <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> -->
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>
         </transmission>

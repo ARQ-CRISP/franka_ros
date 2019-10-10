@@ -33,6 +33,8 @@ FrankaCombinableHW::FrankaCombinableHW()
           {1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0}),
       velocity_cartesian_command_libfranka_({0.0, 0.0, 0.0, 0.0, 0.0, 0.0}),
       effort_joint_command_ros_({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}),
+      position_joint_command_ros_({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}),
+      velocity_joint_command_ros_({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}),
       pose_cartesian_command_ros_(
           {1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0}),
       velocity_cartesian_command_ros_({0.0, 0.0, 0.0, 0.0, 0.0, 0.0}),
@@ -79,12 +81,23 @@ bool FrankaCombinableHW::initROSInterfaces(ros::NodeHandle& root_nh, ros::NodeHa
     hardware_interface::JointStateHandle joint_handle_q(joint_names_[i], &robot_state_ros_.q[i],
                                                         &robot_state_ros_.dq[i],
                                                         &robot_state_ros_.tau_J[i]);
+    hardware_interface::JointStateHandle joint_handle_q_d(joint_names_[i], &robot_state_ros_.q_d[i],
+                                                        &robot_state_ros_.dq_d[i],
+                                                        &robot_state_ros_.tau_J[i]);
 
     joint_state_interface_.registerHandle(joint_handle_q);
 
     hardware_interface::JointHandle effort_joint_handle(joint_handle_q,
                                                         &effort_joint_command_ros_.tau_J[i]);
     effort_joint_interface_.registerHandle(effort_joint_handle);
+
+    hardware_interface::JointHandle position_joint_handle(joint_handle_q_d,
+                                                        &position_joint_command_ros_.q[i]);
+    position_joint_interface_.registerHandle(position_joint_handle);
+
+    hardware_interface::JointHandle velocity_joint_handle(joint_handle_q_d,
+                                                        &velocity_joint_command_ros_.dq[i]);
+    velocity_joint_interface_.registerHandle(velocity_joint_handle);
   }
 
   if (root_nh.hasParam("robot_description")) {
@@ -117,6 +130,15 @@ bool FrankaCombinableHW::initROSInterfaces(ros::NodeHandle& root_nh, ros::NodeHa
             joint_limits_interface::EffortJointSoftLimitsHandle effort_limit_handle(
                 effort_joint_interface_.getHandle(joint_name), joint_limits, soft_limits);
             effort_joint_limit_interface_.registerHandle(effort_limit_handle);
+
+            joint_limits_interface::PositionJointSoftLimitsHandle position_limit_handle(
+                position_joint_interface_.getHandle(joint_name), joint_limits, soft_limits);
+            position_joint_limit_interface_.registerHandle(position_limit_handle);
+
+            joint_limits_interface::VelocityJointSoftLimitsHandle velocity_limit_handle(
+                velocity_joint_interface_.getHandle(joint_name), joint_limits, soft_limits);
+            velocity_joint_limit_interface_.registerHandle(velocity_limit_handle);
+
           } else {
             ROS_ERROR_STREAM("FrankaCombinableHW: Could not parse joint limit for joint "
                              << joint_name << " for joint limit interfaces");
@@ -144,6 +166,8 @@ bool FrankaCombinableHW::initROSInterfaces(ros::NodeHandle& root_nh, ros::NodeHa
   registerInterface(&franka_state_interface_);
   registerInterface(&joint_state_interface_);
   registerInterface(&effort_joint_interface_);
+  registerInterface(&velocity_joint_interface_);
+  registerInterface(&position_joint_interface_);
   registerInterface(&franka_pose_cartesian_interface_);
   registerInterface(&franka_velocity_cartesian_interface_);
 
@@ -382,6 +406,8 @@ void FrankaCombinableHW::control(franka::Robot& robot) {
 void FrankaCombinableHW::enforceLimits(const ros::Duration& period) {
   if (period.toSec() > 0.0) {
     effort_joint_limit_interface_.enforceLimits(period);
+    position_joint_limit_interface_.enforceLimits(period);
+    velocity_joint_limit_interface_.enforceLimits(period);
   }
 }
 
@@ -517,16 +543,25 @@ bool FrankaCombinableHW::prepareSwitch(
     case ControlMode::JointTorque:
       run_function_ = [this](franka::Robot& robot) {
         robot.control(std::bind(&FrankaCombinableHW::controlCallback<franka::Torques>, this,
-                                std::cref(effort_joint_command_libfranka_), _1, _2),
-                      limit_rate_);
+                                std::cref(effort_joint_command_libfranka_), _1, _2));
       };
       break;
     case ControlMode::JointPosition:
-      ROS_WARN("FrankaCombinableHW: No valid control mode selected; cannot switch controllers.");
-      return false;
+      run_function_ = [this](franka::Robot& robot) {
+        robot.control(std::bind(&FrankaCombinableHW::controlCallback<franka::JointPositions>, this,
+                                std::cref(position_joint_command_ros_), _1, _2));
+      // ROS_WARN("FrankaCombinableHW: No valid control mode selected; cannot switch controllers.");
+      // return false;
+      };
+      break;
     case ControlMode::JointVelocity:
-      ROS_WARN("FrankaCombinableHW: No valid control mode selected; cannot switch controllers.");
-      return false;
+      run_function_ = [this](franka::Robot& robot) {
+        robot.control(std::bind(&FrankaCombinableHW::controlCallback<franka::JointVelocities>, this,
+                                std::cref(velocity_joint_command_ros_), _1, _2));
+      // ROS_WARN("FrankaCombinableHW: No valid control mode selected; cannot switch controllers.");
+      // return false;
+      };
+      break;
     case ControlMode::CartesianPose:
       ROS_WARN("FrankaCombinableHW: No valid control mode selected; cannot switch controllers.");
       return false;
@@ -534,18 +569,31 @@ bool FrankaCombinableHW::prepareSwitch(
       ROS_WARN("FrankaCombinableHW: No valid control mode selected; cannot switch controllers.");
       return false;
     case (ControlMode::JointTorque | ControlMode::JointPosition):
-      ROS_WARN("FrankaCombinableHW: No valid control mode selected; cannot switch controllers.");
-      return false;
+      run_function_ = [this](franka::Robot& robot) {
+        robot.control(std::bind(&FrankaCombinableHW::controlCallback<franka::Torques>, this,
+                                std::cref(effort_joint_command_libfranka_), _1, _2),
+                      std::bind(&FrankaCombinableHW::controlCallback<franka::JointPositions>, this,
+                                              std::cref(position_joint_command_ros_), _1, _2));
+      };
+      break;
+      // ROS_WARN("FrankaCombinableHW: No valid control mode selected; cannot switch controllers.");
+      // return false;
     case (ControlMode::JointTorque | ControlMode::JointVelocity):
-      ROS_WARN("FrankaCombinableHW: No valid control mode selected; cannot switch controllers.");
-      return false;
+      // ROS_WARN("FrankaCombinableHW: No valid control mode selected; cannot switch controllers.");
+      // return false;
+      run_function_ = [this](franka::Robot& robot) {
+        robot.control(std::bind(&FrankaCombinableHW::controlCallback<franka::Torques>, this,
+                                std::cref(effort_joint_command_libfranka_), _1, _2),
+                      std::bind(&FrankaCombinableHW::controlCallback<franka::JointVelocities>, this,
+                                              std::cref(velocity_joint_command_ros_), _1, _2));
+      };
+      break;
     case (ControlMode::JointTorque | ControlMode::CartesianPose):
       run_function_ = [this](franka::Robot& robot) {
         robot.control(std::bind(&FrankaCombinableHW::controlCallback<franka::Torques>, this,
                                 std::cref(effort_joint_command_libfranka_), _1, _2),
                       std::bind(&FrankaCombinableHW::controlCallback<franka::CartesianPose>, this,
-                                std::cref(pose_cartesian_command_libfranka_), _1, _2),
-                      limit_rate_);
+                                std::cref(pose_cartesian_command_libfranka_), _1, _2));
       };
       break;
     case (ControlMode::JointTorque | ControlMode::CartesianVelocity):
@@ -553,8 +601,7 @@ bool FrankaCombinableHW::prepareSwitch(
         robot.control(std::bind(&FrankaCombinableHW::controlCallback<franka::Torques>, this,
                                 std::cref(effort_joint_command_libfranka_), _1, _2),
                       std::bind(&FrankaCombinableHW::controlCallback<franka::CartesianVelocities>,
-                                this, std::cref(velocity_cartesian_command_libfranka_), _1, _2),
-                      limit_rate_);
+                                this, std::cref(velocity_cartesian_command_libfranka_), _1, _2));
       };
       break;
     default:
@@ -619,6 +666,14 @@ std::array<double, 7> FrankaCombinableHW::getJointEffortCommand() const noexcept
   return effort_joint_command_libfranka_.tau_J;
 }
 
+std::array<double, 7> FrankaCombinableHW::getJointVelocityCommand() const noexcept {
+  return velocity_joint_command_ros_.dq;
+}
+
+std::array<double, 7> FrankaCombinableHW::getJointPositionCommand() const noexcept {
+  return position_joint_command_ros_.q;
+}
+
 std::string FrankaCombinableHW::getArmID() {
   return arm_id_;
 }
@@ -648,6 +703,14 @@ bool FrankaCombinableHW::controllerNeedsReset() {
 
 bool FrankaCombinableHW::commandHasNaN(const franka::Torques& command) {
   return arrayHasNaN(command.tau_J);
+}
+
+bool FrankaCombinableHW::commandHasNaN(const franka::JointPositions& command) {
+  return arrayHasNaN(command.q);
+}
+
+bool FrankaCombinableHW::commandHasNaN(const franka::JointVelocities& command) {
+  return arrayHasNaN(command.dq);
 }
 
 bool FrankaCombinableHW::commandHasNaN(const franka::CartesianPose& command) {
