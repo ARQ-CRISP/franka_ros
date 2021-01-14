@@ -66,5 +66,25 @@
             <mu1>0.2</mu1>
             <mu2>0.2</mu2>
         </gazebo>
+
+        <!-- Hand -->
+        <gazebo reference="${robot_name}_hand">
+            <material>Gazebo/White</material>
+            <mu1>0.2</mu1>
+            <mu2>0.2</mu2>
+        </gazebo>
+
+        <!-- Right finger -->
+        <gazebo reference="${robot_name}_rightfinger">
+            <material>Gazebo/White</material>
+            <mu1>0.2</mu1>
+            <mu2>0.2</mu2>
+        </gazebo>
+        <!-- Link8 -->
+        <gazebo reference="${robot_name}_leftfinger">
+            <material>Gazebo/White</material>
+            <mu1>0.2</mu1>
+            <mu2>0.2</mu2>
+        </gazebo>
     </xacro:macro>
 </robot>
