@@ -7,9 +7,23 @@
 
   <link name="world"/>
 
-  <xacro:panda_arm connected_to="world" xyz="0 0 0.86"/>
-  <xacro:hand ns="panda" rpy="0 0 ${-pi/4}" connected_to="panda_link8" safety_distance="0.03"/>
+  <xacro:arg name="initial_x" default="0.0"/>
+  <xacro:arg name="initial_y" default="-0.04"/>
+  <xacro:arg name="initial_z" default="0.86"/>
 
+  <!-- Create a fixed joint between the reference frame (world) and the robot -->
+  <joint name="world_to_arm_joint" type="fixed">
+      <parent link="world"/>
+      <child link="panda_link0"/>
+      <origin xyz="$(arg initial_x) $(arg initial_y) $(arg initial_z)" rpy="0 0.0 -1.57079632679 "/>
+  </joint>
+
+  <!-- Add the panda arm -->
+  <xacro:panda_arm/>
+  <!-- Add robot hand -->
+  <xacro:hand ns="panda" rpy="0 0 ${-pi/4}" connected_to="panda_link8" safety_distance="0.03"/>
+  <!-- Add the robot properties for gazebo -->
   <xacro:panda_gazebo robot_name="panda" />
-  <xacro:panda_transmission robot_name="panda" />
+  <!-- Add gazebo plugin and transmission properties (linking Moveit! to Gazebo) -->
+  <xacro:panda_transmission robot_name="panda"/>
 </robot>

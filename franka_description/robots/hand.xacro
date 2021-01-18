@@ -27,6 +27,11 @@
       </inertial>
     </link>
     <link name="${ns}_leftfinger">
+        <visual>
+          <geometry>
+            <mesh filename="package://franka_description/meshes/visual/finger.dae"/>
+          </geometry>
+        </visual>
         <collision>
           <geometry>
             <mesh filename="package://franka_description/meshes/collision/finger.stl"/>
@@ -70,7 +75,6 @@
       <origin xyz="0 0 0.0584" rpy="0 0 0"/>
       <axis xyz="0 -1 0"/>
       <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
-      <mimic joint="${ns}_finger_joint1" />
     </joint>
   </xacro:macro>
 </robot>

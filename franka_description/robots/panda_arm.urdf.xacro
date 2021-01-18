@@ -1,5 +1,27 @@
 <?xml version='1.0' encoding='utf-8'?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="panda">
-  <xacro:include filename="$(find franka_description)/robots/panda_arm.xacro" />
-  <xacro:panda_arm safety_distance="0.03"/>
+
+    <xacro:include filename="$(find franka_description)/robots/panda_arm.xacro" />
+    <xacro:include filename="$(find franka_description)/robots/panda.gazebo.xacro" />
+    <xacro:include filename="$(find franka_description)/robots/panda.transmission.xacro" />
+
+    <link name="world"/>
+
+    <xacro:arg name="initial_x" default="0.0"/>
+    <xacro:arg name="initial_y" default="-0.04"/>
+    <xacro:arg name="initial_z" default="0.86"/>
+
+    <!-- Create a fixed joint between the reference frame (world) and the robot -->
+    <joint name="world_to_arm_joint" type="fixed">
+        <parent link="world"/>
+        <child link="panda_link0"/>
+        <origin xyz="$(arg initial_x) $(arg initial_y) $(arg initial_z)" rpy="0 0.0 -1.57079632679 "/>
+    </joint>
+
+    <!-- Add the panda arm -->
+    <xacro:panda_arm/>
+    <!-- Add the robot properties for gazebo -->
+    <xacro:panda_gazebo robot_name="panda" />
+    <!-- Add gazebo plugin and transmission properties (linking Moveit! to Gazebo) -->
+    <xacro:panda_transmission robot_name="panda"/>
 </robot>
